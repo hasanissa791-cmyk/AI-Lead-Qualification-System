@@ -1,0 +1,722 @@
+{
+  "name": "learn n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-864, -464],
+      "id": "bc57ad54-7f16-46a5-b051-f153d8526b5b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f99cf32e-1c58-4642-9415-073a885b7726",
+              "name": "full_name",
+              "value": "John Doe",
+              "type": "string"
+            },
+            {
+              "id": "011ba1d1-c681-471b-8e03-413e71eee463",
+              "name": "email",
+              "value": "john@company.com",
+              "type": "string"
+            },
+            {
+              "id": "27689368-3143-4bb0-a5a2-b119ce4aee69",
+              "name": "company",
+              "value": "Acme",
+              "type": "string"
+            },
+            {
+              "id": "5d4788c0-a8ff-4fc6-83a4-6b450b16dbb3",
+              "name": "website",
+              "value": "https://acme.com",
+              "type": "string"
+            },
+            {
+              "id": "3f5d9f28-9336-406f-af20-b308afe3c887",
+              "name": "service",
+              "value": "AI Automation",
+              "type": "string"
+            },
+            {
+              "id": "ea343808-22aa-4e13-bbc5-e0a4818e7473",
+              "name": "budget",
+              "value": 60,
+              "type": "number"
+            },
+            {
+              "id": "97c80b28-f73d-4d25-9278-ec2ef889d2c1",
+              "name": "challenge",
+              "value": "We spend too much time qualifying leads manually.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-640, -464],
+      "id": "b895e640-678f-498b-9aef-4dcc028e47a7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a strict AI sales scoring assistant.\n\nAnalyze this lead:\nName: {{$json.full_name}}\nCompany: {{$json.company}}\nService: {{$json.service}}\nBudget: {{$json.budget}} USD\nChallenge: {{$json.challenge}}\n\nIMPORTANT SCORING RULES (MUST FOLLOW):\n- If Budget is less than 500, Lead Score MUST be below 40.\n- If Budget is between 500 and 2000, Lead Score MUST be 40-70.\n- If Budget is above 2000, Lead Score MUST be above 70.\n\nReturn ONLY valid JSON with these keys:\n- lead_score (number)\n- short_summary (string)\n- recommended_service (string)",
+        "options": {
+          "autoSaveHighlightedData": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-192, -272],
+      "id": "4f5f0427-bcc2-4d93-abc5-f060e6fa3467",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [-320, 112],
+      "id": "c7744d82-d98d-4121-85e7-62360e8eff19",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "lHmhDCnZYyuyMRI6",
+          "name": "YOUR_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4b10690c-23d5-4b6e-b66d-c26f31442298",
+              "leftValue": "={{$json.lead_score}}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [384, -272],
+      "id": "fc3a4d79-2219-4b57-abbc-410582219d35",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "example@example.com",
+        "subject": "={{$json.full_name}}",
+        "message": "=<h2>🔔 عميل جديد عالي الجودة!</h2>\n<hr>\n<p><strong>👤 الاسم:</strong> {{$json.full_name}}</p>\n<p><strong>🏢 الشركة:</strong> {{$json.company}} </p>\n<p><strong>📧 البريد الإلكتروني:</strong> {{$json.email}}</p>\n<p><strong>⭐ درجة العميل:</strong> {{$json.lead_score}} / 100</p>\n<hr>\n<h3>📝 الملخص:</h3>\n<p>{{$json.summary}}</p>\n<h3>💡 التوصية:</h3>\n<p>{{$json.recommendation}}</p>\n<hr>\n<p><em>تم الإرسال تلقائياً عبر n8n - يرجى التواصل مع العميل في أقرب وقت.</em></p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [608, -816],
+      "id": "3f2bca2b-6081-44c2-b659-56da8dea8a9b",
+      "name": "Send a message",
+      "webhookId": "e8a793f4-d024-4426-98f3-ebb98c1954ca",
+      "notesInFlow": false,
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LiUThznBOJU5zL8u",
+          "name": "YOUR_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Cold Lead",
+          "cachedResultUrl": "YOUR_GOOGLE_SHEET_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 514279820,
+          "mode": "list",
+          "cachedResultName": "الورقة2",
+          "cachedResultUrl": "YOUR_GOOGLE_SHEET_URL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.full_name }}",
+            "Email": "={{ $json.email }}",
+            "Company": "=\t{{ $json.company }}",
+            "Score": "={{ $json.lead_score }}",
+            "Summary": "={{ $json.summary }}",
+            "Recommendation": "={{ $json.recommendation }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recommendation",
+              "displayName": "Recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [624, -64],
+      "id": "d8676d2f-6be1-493e-8178-8a8707866ac7",
+      "name": "Append row in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "H2s1laJqitEW7cPC",
+          "name": "YOUR_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "YOUR_WEBHOOK_URL",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "lead",
+              "value": "=<h2>🔔 عميل جديد عالي الجودة!</h2>\n<hr>\n<p><strong>👤 الاسم:</strong> {{$json.full_name}}</p>\n<p><strong>🏢 الشركة:</strong> {{$json.company}} </p>\n<p><strong>📧 البريد الإلكتروني:</strong> {{$json.email}}</p>\n<p><strong>⭐ درجة العميل:</strong> {{$json.lead_score}} / 100</p>\n<hr>\n<h3>📝 الملخص:</h3>\n<p>{{$json.summary}}</p>\n<h3>💡 التوصية:</h3>\n<p>{{$json.recommendation}}</p>\n<hr>\n<p><em>تم الإرسال تلقائياً عبر n8n - يرجى التواصل مع العميل في أقرب وقت.</em></p>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [608, -416],
+      "id": "82be4ec8-a9d4-488b-90cd-f8d7627df4be",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b6e2fabe-4e57-464a-a3c4-11fa46e7229a",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-864, -80],
+      "id": "a0bb249e-60cc-42e4-8e4f-3b17d39e0866",
+      "name": "Webhook",
+      "webhookId": "b6e2fabe-4e57-464a-a3c4-11fa46e7229a"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-864, -272],
+      "id": "ffe4e1ea-e23d-4df1-a7c5-70cc9259547d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=🔔 عميل جديد عالي الجودة!\n\n👤 الاسم: {{$json.full_name}}\n🏢 الشركة: {{$json.company}}\n📧 البريد: {{$json.email}}\n⭐ الدرجة: {{$json.lead_score}}/100\n📝 الملخص: {{$json.summary}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1088, -592],
+      "id": "c48b044e-218a-4c2c-b139-cd148a8ea902",
+      "name": "Send a text message",
+      "webhookId": "770a298f-61c0-4166-8d39-cbab4a5a66c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "fe1yEKyeJ226Q7OK",
+          "name": "YOUR_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d9759c92-454b-4831-94be-bdad721c2c1e",
+              "leftValue": "={{$json.email}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [608, -592],
+      "id": "e9d306e6-35ad-47e0-9b3c-ae57e03232d6",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"تم استقبال العميل ومعالجته بنجاح\",\n  \"customer_name\": \"{{ $json.full_name }}\",\n  \"lead_score\": {{ $json.lead_score }},\n  \"classification\": \"{{ $json.classification }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [1792, -272],
+      "id": "3daeaef2-b9c6-46c7-ac9d-ef9d1de5efd5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [848, -592],
+      "id": "00b6e7a2-f33e-417f-bdf5-75ed45d87925",
+      "name": "Wait",
+      "webhookId": "9edd8434-896d-4e18-a0f2-ff1329383100"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. استقبل البيانات الخام كما هي من Webhook\nconst rawData = $json;\n\n// 2. دالة ذكية للبحث عن قيمة في أي مكان (الجذر أو الكائنات الفرعية)\nfunction deepFind(obj, keys) {\n  // أولاً: ابحث في الجذر مباشرة\n  for (let key of keys) {\n    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {\n      return obj[key];\n    }\n  }\n  \n  // ثانياً: ابحث داخل أي كائن فرعي (مثل data, body, json, payload)\n  for (let mainKey in obj) {\n    if (typeof obj[mainKey] === 'object' && obj[mainKey] !== null) {\n      const nested = obj[mainKey];\n      for (let key of keys) {\n        if (nested[key] !== undefined && nested[key] !== null && nested[key] !== '') {\n          return nested[key];\n        }\n      }\n    }\n  }\n  \n  // إذا لم يجد شيئاً، يرجع null (وليس قيمة افتراضية)\n  return null;\n}\n\n// 3. تنظيم البيانات (Mapping) باستخدام الدالة أعلاه\nconst organizedData = {\n  full_name: deepFind(rawData, ['full_name', 'name', 'fullName', 'user_name', 'userName']),\n  email: deepFind(rawData, ['email', 'Email', 'mail', 'user_email', 'userEmail']),\n  company: deepFind(rawData, ['company', 'Company', 'organization', 'org']),\n  website: deepFind(rawData, ['website', 'Website', 'web', 'url', 'site']),\n  service: deepFind(rawData, ['service', 'Service', 'product', 'interest']),\n  budget: deepFind(rawData, ['budget', 'Budget', 'price', 'amount', 'value']),\n  challenge: deepFind(rawData, ['challenge', 'Challenge', 'problem', 'need', 'pain_point', 'description'])\n};\n\n// 4. إخراج البيانات المنظمة كما هي (بدون أي تعديل أو فرض)\nreturn [{\n  json: organizedData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-640, -80],
+      "id": "c564abe2-4dd4-4d55-a4ae-c051b1ddb82a",
+      "name": "Format Webhook Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// هذه بيانات وهمية لتشغيل الـ Workflow تلقائياً\nreturn [{\n  json: {\n    full_name: \"عميل تلقائي صباحي\",\n    email: \"example@example.com\",\n    company: \"شركة الصباح\",\n    website: \"https://auto.com\",\n    service: \"استشارات آلية\",\n    budget: 6000,   \n    challenge: \"تحدي تلقائي من الجدولة\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-640, -272],
+      "id": "65f4ad6a-8800-4dfd-93b9-b461220de575",
+      "name": "Generate Dummy Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. خذ البيانات الأصلية من المدخلات الحالية ($json) وليس من عقدة خارجية\nconst originalData = $json;\n\n// 2. استخرج بيانات الذكاء الاصطناعي من النص\nconst replyText = originalData.output || '';\n\nfunction extractNumber(text) {\n  const match = text.match(/\\d+/);\n  return match ? Number(match[0]) : 0;\n}\n\nfunction extractTextAfter(text, keyword) {\n  const lines = text.split('\\n');\n  for (let line of lines) {\n    if (line.toLowerCase().includes(keyword.toLowerCase())) {\n      return line.replace(/^[^:]*:\\s*/, '').trim();\n    }\n  }\n  const regex = new RegExp(`${keyword}[\\\\s:]+([^\\\\n,.]+)`, 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : \"غير متوفر\";\n}\n\nconst extractedData = {\n  lead_score: extractNumber(replyText),\n  summary: extractTextAfter(replyText, 'summary') || extractTextAfter(replyText, 'ملخص'),\n  recommendation: extractTextAfter(replyText, 'recommendation') || extractTextAfter(replyText, 'توصية')\n};\n\n// 3. دمج البيانات الأصلية (من $json) مع البيانات المستخرجة (من AI)\nreturn [{\n  json: {\n    full_name: originalData.full_name || originalData.name || \"غير معروف\",\n    email: originalData.email || \"\",\n    company: originalData.company || \"\",\n    website: originalData.website || \"\",\n    service: originalData.service || \"\",\n    budget: originalData.budget || 0,\n    challenge: originalData.challenge || \"\",\n    ...extractedData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, -272],
+      "id": "755e1aeb-c898-46c0-889d-8641d36ba0ca",
+      "name": "Extract AI & Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// استقبل جميع العناصر القادمة (من Aggregate)\nconst items = $input.all();\n\n// ابحث عن العنصر الأول الذي يحتوي على lead_score حقيقي (أكبر من 0)\nlet validItem = items.find(item => Number(item.json.lead_score) > 0);\n\n// إذا لم نجده، حاول العثور على عنصر يحتوي على اسم حقيقي (كحل احتياطي)\nif (!validItem) {\n  validItem = items.find(item => item.json.full_name && item.json.full_name.trim() !== '');\n}\n\n// إذا لم نجد أي شيء، أخرج بيانات افتراضية\nif (!validItem) {\n  return [{\n    json: {\n      full_name: \"لا توجد بيانات\",\n      lead_score: 0,\n      classification: \"Low\"\n    }\n  }];\n}\n\n// استخرج الرقم وتأكد من أنه رقم\nlet score = Number(validItem.json.lead_score) || 0;\n\n// أضف التصنيف إلى العنصر نفسه\nvalidItem.json.classification = score > 70 ? 'High' : 'Low';\nvalidItem.json.lead_score = score;\n\n// أخرج العنصر الصحيح (عنصر واحد فقط)\nreturn [validItem];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1504, -272],
+      "id": "9d672326-7258-4f8d-8cfe-54aac6257b11",
+      "name": "Pick Valid Item"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [-416, -288],
+      "id": "b47c435d-79f5-4b3c-98bf-43f4e5b14dde",
+      "name": "Merge Triggers"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1040, -272],
+      "id": "766e89de-7dc1-457c-90be-77d549e78edb",
+      "name": "Merge Paths"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "full_name"
+            },
+            {
+              "fieldToAggregate": "\temail"
+            },
+            {
+              "fieldToAggregate": "\tcompany"
+            },
+            {
+              "fieldToAggregate": "lead_score"
+            },
+            {
+              "fieldToAggregate": "summary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1264, -272],
+      "id": "8fcaad03-b612-4393-9ac2-bb6850211d43",
+      "name": "Aggregate Arrays"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract AI & Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Paths",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Paths",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Dummy Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Generate Dummy Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract AI & Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Valid Item": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Paths": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Arrays",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Arrays": {
+      "main": [
+        [
+          {
+            "node": "Pick Valid Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "5142058c-fadc-4745-b5f7-98845e8d588f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9142373551c000f0fc88819a8b943ecedaa44b44759529db7313cb91094f7f84"
+  },
+  "nodeGroups": [],
+  "id": "iqlItd8r8vLlS8C4",
+  "tags": []
+}
