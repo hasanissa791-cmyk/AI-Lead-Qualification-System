@@ -27,3 +27,26 @@ Manually filtering and scoring leads from multiple channels is time-consuming an
    - (Optional) Send a detailed email to the manager.
 
 ## 📁 Repository Structure
+
+## ⚙️ Setup Instructions
+1. Clone the repository.
+2. Import `workflow.json` into your n8n instance.
+3. Set up the following credentials in n8n:
+   - OpenRouter API Key
+   - Gmail OAuth2
+   - Telegram Bot Token
+   - Google Sheets Service Account
+4. Adjust the prompt in the HTTP Request node (OpenRouter) to match your qualification criteria.
+5. Execute the workflow.
+
+## 📈 Future Improvements
+- Add a CRM integration (HubSpot, Pipedrive).
+- Support for email-based lead ingestion.
+- Dashboard using Streamlit or Retool.
+
+## 👤 Author
+**Hasan Issa** – AI Automation Engineer  
+[LinkedIn](https://linkedin.com/in/hasan-issa30) | [Instagram](https://instagram.com/hasan__issa)
+
+## ⭐ Show Your Support
+If this project helps you, please give it a star!
