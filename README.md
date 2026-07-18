@@ -27,86 +27,84 @@ Manually filtering and scoring leads from multiple channels is time-consuming an
    - (Optional) Send a detailed email to the manager.
 
 ## 📁 Repository Structure
-📐 الهيكل المعماري للمشروع (Project Architecture)
-1. نظرة عامة (Overview)
-الاسم: نظام تأهيل العملاء المحتملين بالذكاء الاصطناعي (AI Lead Qualification System).
+📐 Project Architecture
+1. Overview
+Name: AI Lead Qualification System
 
-الوظيفة الأساسية: استقبال بيانات عميل محتمل (الاسم، الشركة، الميزانية، التحدي)، تحليلها بواسطة الذكاء الاصطناعي، ومنحها درجة (0-100)، ثم توجيهها إلى مسارين:
+Primary Function: Receives lead data (name, company, budget, challenge), analyzes it using AI, assigns a score (0-100), and then directs it to one of two paths:
 
-High (≥ 70): إرسال بريد إلكتروني + رسالة تلغرام + طلب HTTP خارجي.
+High (≥ 70): Sends email + Telegram message + external HTTP request.
 
-Low (< 70): حفظ البيانات في Google Sheets.
+Low (< 70): Saves data to Google Sheets.
 
-قنوات التشغيل: 3 مشغلات (Manual, Webhook, Schedule).
+Operation Channels: 3 triggers (Manual, Webhook, Scheduled).
 
-2. هيكل البيانات الأساسي (Core Data Schema)
-جميع العقد تتعامل مع كائن JSON واحد يحمل هذه المفاتيح:
+2. Core Data Schema
+All nodes interact with a single JSON object that holds these keys:
 
-الحقل	النوع	المصدر	مثال
-full_name	نص	مدخلات المستخدم	"أحمد"
-email	نص	مدخلات المستخدم	"ahmed@web.com"
-company	نص	مدخلات المستخدم	"شركة التقنية"
-website	نص (اختياري)	مدخلات المستخدم	"https://tech.com"
-service	نص (اختياري)	مدخلات المستخدم	"استشارات آلية"
-budget	رقم	مدخلات المستخدم	6000
-challenge	نص (اختياري)	مدخلات المستخدم	"نضيع وقتاً في تأهيل العملاء"
-lead_score	رقم	مستخرج من الذكاء الاصطناعي	85
-summary	نص	مستخرج من الذكاء الاصطناعي	"عميل عالي القيمة بميزانية كبيرة..."
-recommendation	نص	مستخرج من الذكاء الاصطناعي	"خدمة الأتمتة المتقدمة"
-classification	نص	مضافة بواسطة Code	"High" أو "Low"
-3. مكونات النظام (System Components)
-ينقسم الوركفلو إلى 4 طبقات رئيسية:
+Field Type Source Example
+full_name User input text "Ahmed"
+email User input text "ahmed@web.com"
+company User input text "Tech Company"
+website User input text "https://tech.com"
+service User input text "Automated Consulting"
+budget User input number 6000
+challenge User input text "We waste time on customer onboarding"
+lead_score AI-generated score 85
+summary AI-generated text "High-value customer with a large budget..."
+recommendation AI-generated text "Advanced Automation Service"
+classification Text added by Code "High" or "Low"
+3. System Components
+Workflow is divided into 4 main layers:
 
-الطبقة 1: المدخلات (Input Layer)
-المشغلات:
+Layer 1: Inputs (Input Layer)
+Triggers:
 
-Manual Trigger (للتطوير والاختبار).
+Manual Trigger (for development and testing).
 
-Webhook (لاستقبال البيانات من أنظمة خارجية).
+Webhook (for receiving data from external systems).
 
-Schedule Trigger (للبيانات الوهمية/التجارب التلقائية).
+Schedule Trigger (for dummy data/automated testing).
 
-محولات البيانات:
+Data Transformers:
 
-Code in JavaScript1 (تنسيق بيانات Webhook).
+Code in JavaScript1 (Webhook data format).
 
-Code in JavaScript2 (توليد بيانات وهمية للتشغيل التلقائي).
+Code in JavaScript2 (Generates dummy data for automation).
 
-الطبقة 2: المعالجة الذكية (Processing Layer)
-دمج المدخلات: Merge (يجمع الـ 3 مشغلات في مسار واحد).
+Layer 2: Processing Layer
+Input Merge: Merge (Combines the 3 triggers into a single path).
 
-الذكاء الاصطناعي: AI Agent (يحلل النص ويستخرج الدرجة والتوصية).
+AI Agent: AI Agent (Analyzes the text and extracts the score and recommendation).
 
-استخراج النتائج: Code in JavaScript (يستخرج lead_score, summary, recommendation من نص الـ AI ويدمجها مع البيانات الأصلية).
+Outcome Extraction: Code in JavaScript (Extracts the lead_score, summary, and recommendation from the AI ​​text and merges them with the original data).
 
-الطبقة 3: المنطق والتوجيه (Logic Layer)
-التفرع الشرطي: If (يقسم العملاء إلى مسار High أو Low بناءً على lead_score > 70).
+Layer 3: Logic Layer
+Conditional Branching: If (Sorts clients into a High or Low path based on a lead_score > 70).
 
-التصفية: Filter (يزيل العناصر الفارغة قبل إرسال تلغرام).
+Filter: Filter (Removes empty elements before sending a Telegram). Layer 4: Actions and Outputs
 
-الطبقة 4: الإجراءات والمخرجات (Action Layer)
-المسار العالي:
+High Path:
 
-Send a message (Gmail): إرسال بريد منسق.
+Send a message (Gmail): Sends a formatted email.
 
-Wait + Send a text message (Telegram): إرسال تنبيه متأخر 10 ثوانٍ.
+Wait + Send a text message (Telegram): Sends a 10-second delay alert.
 
-HTTP Request: إرسال نسخة من البريد إلى Webhook.site (للتكامل مع أنظمة أخرى).
+HTTP Request: Sends a copy of the email to Webhook.site (for integration with other systems).
 
-المسار المنخفض:
+Low Path:
 
-Append row in sheet (Google Sheets): حفظ البيانات.
+Append row in sheet (Google Sheets): Saves data.
 
-التجميع النهائي:
+Final Aggregate:
 
-Merge1 (يجمع مخرجات المسارين).
+Merge1 (Combines the outputs of both paths).
 
-Aggregate (يحول المصفوفة إلى عنصر واحد بمفاتيح مصفوفة).
+Aggregate (Converts an array to a single element with array keys).
 
-Code in JavaScript3 (يختار العنصر الصحيح ويضيف classification).
+Code in JavaScript 3 (Selects the correct element and adds classification).
 
-Respond to Webhook (يرد بـ JSON للمرسل الخارجي).
-
+Respond to Webhook (Responds with JSON to the external sender).
 
 
 ## ⚙️ Setup Instructions
