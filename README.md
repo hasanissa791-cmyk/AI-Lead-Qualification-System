@@ -27,6 +27,87 @@ Manually filtering and scoring leads from multiple channels is time-consuming an
    - (Optional) Send a detailed email to the manager.
 
 ## 📁 Repository Structure
+📐 الهيكل المعماري للمشروع (Project Architecture)
+1. نظرة عامة (Overview)
+الاسم: نظام تأهيل العملاء المحتملين بالذكاء الاصطناعي (AI Lead Qualification System).
+
+الوظيفة الأساسية: استقبال بيانات عميل محتمل (الاسم، الشركة، الميزانية، التحدي)، تحليلها بواسطة الذكاء الاصطناعي، ومنحها درجة (0-100)، ثم توجيهها إلى مسارين:
+
+High (≥ 70): إرسال بريد إلكتروني + رسالة تلغرام + طلب HTTP خارجي.
+
+Low (< 70): حفظ البيانات في Google Sheets.
+
+قنوات التشغيل: 3 مشغلات (Manual, Webhook, Schedule).
+
+2. هيكل البيانات الأساسي (Core Data Schema)
+جميع العقد تتعامل مع كائن JSON واحد يحمل هذه المفاتيح:
+
+الحقل	النوع	المصدر	مثال
+full_name	نص	مدخلات المستخدم	"أحمد"
+email	نص	مدخلات المستخدم	"ahmed@web.com"
+company	نص	مدخلات المستخدم	"شركة التقنية"
+website	نص (اختياري)	مدخلات المستخدم	"https://tech.com"
+service	نص (اختياري)	مدخلات المستخدم	"استشارات آلية"
+budget	رقم	مدخلات المستخدم	6000
+challenge	نص (اختياري)	مدخلات المستخدم	"نضيع وقتاً في تأهيل العملاء"
+lead_score	رقم	مستخرج من الذكاء الاصطناعي	85
+summary	نص	مستخرج من الذكاء الاصطناعي	"عميل عالي القيمة بميزانية كبيرة..."
+recommendation	نص	مستخرج من الذكاء الاصطناعي	"خدمة الأتمتة المتقدمة"
+classification	نص	مضافة بواسطة Code	"High" أو "Low"
+3. مكونات النظام (System Components)
+ينقسم الوركفلو إلى 4 طبقات رئيسية:
+
+الطبقة 1: المدخلات (Input Layer)
+المشغلات:
+
+Manual Trigger (للتطوير والاختبار).
+
+Webhook (لاستقبال البيانات من أنظمة خارجية).
+
+Schedule Trigger (للبيانات الوهمية/التجارب التلقائية).
+
+محولات البيانات:
+
+Code in JavaScript1 (تنسيق بيانات Webhook).
+
+Code in JavaScript2 (توليد بيانات وهمية للتشغيل التلقائي).
+
+الطبقة 2: المعالجة الذكية (Processing Layer)
+دمج المدخلات: Merge (يجمع الـ 3 مشغلات في مسار واحد).
+
+الذكاء الاصطناعي: AI Agent (يحلل النص ويستخرج الدرجة والتوصية).
+
+استخراج النتائج: Code in JavaScript (يستخرج lead_score, summary, recommendation من نص الـ AI ويدمجها مع البيانات الأصلية).
+
+الطبقة 3: المنطق والتوجيه (Logic Layer)
+التفرع الشرطي: If (يقسم العملاء إلى مسار High أو Low بناءً على lead_score > 70).
+
+التصفية: Filter (يزيل العناصر الفارغة قبل إرسال تلغرام).
+
+الطبقة 4: الإجراءات والمخرجات (Action Layer)
+المسار العالي:
+
+Send a message (Gmail): إرسال بريد منسق.
+
+Wait + Send a text message (Telegram): إرسال تنبيه متأخر 10 ثوانٍ.
+
+HTTP Request: إرسال نسخة من البريد إلى Webhook.site (للتكامل مع أنظمة أخرى).
+
+المسار المنخفض:
+
+Append row in sheet (Google Sheets): حفظ البيانات.
+
+التجميع النهائي:
+
+Merge1 (يجمع مخرجات المسارين).
+
+Aggregate (يحول المصفوفة إلى عنصر واحد بمفاتيح مصفوفة).
+
+Code in JavaScript3 (يختار العنصر الصحيح ويضيف classification).
+
+Respond to Webhook (يرد بـ JSON للمرسل الخارجي).
+
+
 
 ## ⚙️ Setup Instructions
 1. Clone the repository.
