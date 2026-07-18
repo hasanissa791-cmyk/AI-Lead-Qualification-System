@@ -46,7 +46,7 @@ Manually filtering and scoring leads from multiple channels is time-consuming an
 
 ## 👤 Author
 **Hasan Issa** – AI Automation Engineer  
-[LinkedIn](https://linkedin.com/in/hasan-issa30) | [Instagram](https://instagram.com/hasan__issa)
+[LinkedIn](https://l.instagram.com/?u=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fhasan-issa30%2F%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPOTM2NjE5NzQzMzkyNDU5AAGnJgIbMY_VZGCL-omZPvp7A9n_1wp0SohXbi8rpLzKjv-bNLraYovDw2k_d_8_aem_uRBRqK8S2sq9u7W_5GrSgQ&e=AUCRmAumMaUmOP7a6y6hLE3gf3afIZ6QoVxwMFdcYB1weU6kkOiUYD3OHAGh8N7xRnK72tAi_TrYuyTi9hTMpDUiXUEbo_IaY6kERTAU-SoAQld8ZK3A1kuX8n13fohKtvM9kgs) | [Instagram](https://www.instagram.com/hasan._._issa?igsh=MWllMHUwYzc3cW9nbw%3D%3D)
 
 ## ⭐ Show Your Support
 If this project helps you, please give it a star!
